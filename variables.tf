@@ -28,12 +28,12 @@ variable "subscription_id" {
 
 variable "address_space" {
   type    = string
-  default = "172.29.255.0/24"
+  default = "172.16.0.0/16"
 }
 
-variable "key_vault_soft_delete_retention_days" {
+variable "subnet_bits" {
   type    = number
-  default = 7
+  default = 8
 }
 
 variable "kubernetes_cluster_orchestrator_version" {
@@ -73,7 +73,7 @@ variable "kubernetes_cluster_default_node_pool_vm_size" {
 
 variable "kubernetes_cluster_default_node_pool_max_pods" {
   type    = number
-  default = 10
+  default = 30
 }
 
 variable "kubernetes_cluster_default_node_pool_min_count" {
@@ -193,6 +193,11 @@ variable "kubernetes_cluster_open_service_mesh_enabled" {
   default = true
 }
 
+variable "kubernetes_cluster_public_fqdn_enabled" {
+  type    = bool
+  default = true
+}
+
 variable "log_analytics_workspace_daily_quota_gb" {
   type    = number
   default = 1
@@ -203,7 +208,12 @@ variable "log_analytics_workspace_retention_in_days" {
   default = 30
 }
 
-variable "container_registry_sku" {
-  type    = string
-  default = "Standard"
+variable "key_vault_soft_delete_retention_days" {
+  type    = number
+  default = 7
+}
+
+variable "bastion_scale_units" {
+  type    = number
+  default = 2
 }

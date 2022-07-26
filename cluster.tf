@@ -5,19 +5,21 @@ locals {
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
-  name                              = "aks-${local.context_name}"
-  location                          = azurerm_resource_group.main.location
-  resource_group_name               = azurerm_resource_group.main.name
-  dns_prefix                        = local.context_name
-  automatic_channel_upgrade         = var.kubernetes_cluster_automatic_channel_upgrade
-  role_based_access_control_enabled = true
-  azure_policy_enabled              = var.kubernetes_cluster_azure_policy_enabled
-  open_service_mesh_enabled         = var.kubernetes_cluster_open_service_mesh_enabled
-  kubernetes_version                = var.kubernetes_cluster_orchestrator_version
-  local_account_disabled            = true
-  oidc_issuer_enabled               = true
-  node_resource_group               = "rg-${local.resource_suffix}-aks"
-  sku_tier                          = var.kubernetes_cluster_sku_tier
+  name                                = "aks-${local.context_name}"
+  location                            = azurerm_resource_group.main.location
+  resource_group_name                 = azurerm_resource_group.main.name
+  dns_prefix                          = local.context_name
+  automatic_channel_upgrade           = var.kubernetes_cluster_automatic_channel_upgrade
+  role_based_access_control_enabled   = true
+  azure_policy_enabled                = var.kubernetes_cluster_azure_policy_enabled
+  open_service_mesh_enabled           = var.kubernetes_cluster_open_service_mesh_enabled
+  kubernetes_version                  = var.kubernetes_cluster_orchestrator_version
+  local_account_disabled              = true
+  oidc_issuer_enabled                 = true
+  node_resource_group                 = "rg-${local.resource_suffix}-aks"
+  sku_tier                            = var.kubernetes_cluster_sku_tier
+  private_cluster_enabled             = true
+  private_cluster_public_fqdn_enabled = var.kubernetes_cluster_public_fqdn_enabled
 
   azure_active_directory_role_based_access_control {
     managed            = true
@@ -109,4 +111,19 @@ resource "azurerm_role_assignment" "registry_pull" {
   role_definition_name = "AcrPull"
   scope                = azurerm_container_registry.main.id
   principal_id         = azurerm_kubernetes_cluster.main.kubelet_identity[0].object_id
+}
+
+module "cluster_endpoint" {
+  source                         = "./modules/endpoint"
+  count                          = var.kubernetes_cluster_public_fqdn_enabled ? 0 : 1
+  resource_group_name            = azurerm_resource_group.main.name
+  resource_suffix                = "${local.resource_suffix}-aks"
+  subnet_id                      = azurerm_subnet.endpoint.id
+  private_connection_resource_id = azurerm_kubernetes_cluster.main.id
+  subresource_name               = "management"
+  private_dns_zone_id            = azurerm_private_dns_zone.main["cluster"].id
+
+  depends_on = [
+    azurerm_kubernetes_cluster.main
+  ]
 }
