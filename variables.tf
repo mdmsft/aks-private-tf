@@ -37,8 +37,9 @@ variable "subnet_bits" {
 }
 
 variable "kubernetes_cluster_orchestrator_version" {
-  type    = string
-  default = "1.24.0"
+  type     = string
+  nullable = true
+  default  = null
 }
 
 variable "kubernetes_cluster_sku_tier" {

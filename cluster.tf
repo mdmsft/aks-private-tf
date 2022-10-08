@@ -2,6 +2,7 @@ locals {
   subnets = [
     azurerm_subnet.cluster.id
   ]
+  kubernetes_version = var.kubernetes_cluster_orchestrator_version == null ? data.azurerm_kubernetes_service_versions.main.latest_version : var.kubernetes_cluster_orchestrator_version
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
@@ -13,7 +14,7 @@ resource "azurerm_kubernetes_cluster" "main" {
   role_based_access_control_enabled   = true
   azure_policy_enabled                = var.kubernetes_cluster_azure_policy_enabled
   open_service_mesh_enabled           = var.kubernetes_cluster_open_service_mesh_enabled
-  kubernetes_version                  = var.kubernetes_cluster_orchestrator_version
+  kubernetes_version                  = local.kubernetes_version
   local_account_disabled              = true
   oidc_issuer_enabled                 = true
   node_resource_group                 = "rg-${local.resource_suffix}-aks"
@@ -40,7 +41,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     os_disk_size_gb              = var.kubernetes_cluster_default_node_pool_os_disk_size_gb
     os_disk_type                 = var.kubernetes_cluster_default_node_pool_os_disk_type
     os_sku                       = var.kubernetes_cluster_default_node_pool_os_sku
-    orchestrator_version         = var.kubernetes_cluster_default_node_pool_orchestrator_version == null ? var.kubernetes_cluster_orchestrator_version : var.kubernetes_cluster_default_node_pool_orchestrator_version
+    orchestrator_version         = var.kubernetes_cluster_default_node_pool_orchestrator_version == null ? local.kubernetes_version : var.kubernetes_cluster_default_node_pool_orchestrator_version
     only_critical_addons_enabled = true
     vnet_subnet_id               = azurerm_subnet.cluster.id
     zones                        = var.kubernetes_cluster_default_node_pool_availability_zones
@@ -83,7 +84,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "main" {
   os_disk_size_gb       = var.kubernetes_cluster_workload_node_pool_os_disk_size_gb
   os_disk_type          = var.kubernetes_cluster_workload_node_pool_os_disk_type
   os_sku                = var.kubernetes_cluster_workload_node_pool_os_sku
-  orchestrator_version  = var.kubernetes_cluster_workload_node_pool_orchestrator_version == null ? var.kubernetes_cluster_orchestrator_version : var.kubernetes_cluster_workload_node_pool_orchestrator_version
+  orchestrator_version  = var.kubernetes_cluster_workload_node_pool_orchestrator_version == null ? local.kubernetes_version : var.kubernetes_cluster_workload_node_pool_orchestrator_version
   vnet_subnet_id        = azurerm_subnet.cluster.id
   zones                 = var.kubernetes_cluster_workload_node_pool_availability_zones
   node_labels           = var.kubernetes_cluster_workload_node_pool_labels

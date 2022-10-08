@@ -34,11 +34,11 @@ resource "azurerm_subnet" "jumphost" {
 }
 
 resource "azurerm_subnet" "endpoint" {
-  name                                           = "snet-pe"
-  virtual_network_name                           = azurerm_virtual_network.main.name
-  resource_group_name                            = azurerm_resource_group.main.name
-  address_prefixes                               = [cidrsubnet(var.address_space, var.subnet_bits, 4)]
-  enforce_private_link_endpoint_network_policies = true
+  name                                      = "snet-pe"
+  virtual_network_name                      = azurerm_virtual_network.main.name
+  resource_group_name                       = azurerm_resource_group.main.name
+  address_prefixes                          = [cidrsubnet(var.address_space, var.subnet_bits, 4)]
+  private_endpoint_network_policies_enabled = false
 }
 
 resource "azurerm_network_security_group" "bastion" {
